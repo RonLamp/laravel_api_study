@@ -31,8 +31,19 @@ class MarcaController extends Controller
         // Validação dos parametros nome e imagem
         $request->validate($this->marca->rules(), $this->marca->feedback());
         // Execução da ação propriamente dita
-        $marca = $this->marca->create($request->all());
+        $imagem = $request->file('imagem');
+        $imagem_urn = $imagem->store('imagens', 'public');
+        //$marca = $this->marca->create($request->all());
+        $marca = $this->marca->create([
+            'nome' => $request->nome,
+            'imagem' => $imagem_urn
+        ]);
         return response()->json($marca, 201);
+        //dd($request->nome);
+        //dd($request->get('nome'));
+        //dd($request->imagem);
+        //dd($request->file('imagem'));
+        //dd($request->all());
     }
     
     /** 
@@ -81,8 +92,15 @@ class MarcaController extends Controller
         } else {
             $request->validate($marca->rules(), $marca->feedback());
         }
+        // carregamento dos valores na variavel $marca
+        $imagem = $request->file('imagem');
+        $imagem_urn = $imagem->store('imagens', 'public');
         // Execução da ação propriamente dita
-        $marca->update($request->all());
+        $marca->update([
+            'nome' => $request->nome,
+            'imagem' => $imagem_urn
+        ]);
+        //$marca->update($request->all());
         return response()->json($marca, 200);
     }
 
