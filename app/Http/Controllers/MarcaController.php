@@ -1,5 +1,6 @@
 <?php
 namespace App\Http\Controllers;
+use Illuminate\Support\Facades\Storage;
 use App\Models\Marca;
 use Illuminate\Http\Request;
 
@@ -16,8 +17,7 @@ class MarcaController extends Controller
      */
     public function index()
     {
-        $marcas = $this->marca->all();
-        return response()->json($marcas, 200);
+        return response()->json($this->marca->all(), 200);
     }
 
     /**
@@ -73,13 +73,21 @@ class MarcaController extends Controller
     {
         // Localizando o resource (registro)
         $marca = $this->marca->find($id);
+        //dd($request->nome);
+        //dd($request->file('imagem'));
         if($marca===null){
             return response()
             ->json(['error'=>'Atualização indisponível, recurso pesquisado inexistente!'], 404);
         }
         // Validação dos parametros nome e imagem
-        //    levando em conta se o método é PUT ou PATCH
-        if($request.method() === 'PATCH'){
+        // levando em conta se o método é PUT ou PATCH
+        //-------------------------------------------
+        // Como o Laravel tem uma restrição de uso quando o formulario de envio
+        // usa o form-data para envio de arquivos a linha abaixo foi alterada.
+        // devemos enviar a requisição pelo método POST e incluir a variável
+        // _method com a definição se é PUT ou PATCH
+        if($request->_method === 'PATCH'){
+        //if($request.method() === 'PATCH'){
             $dinamycRules = array();
             // percorrendo todas as regras definidas no Model
             foreach($marca->rules() as $input => $regra){
@@ -91,6 +99,10 @@ class MarcaController extends Controller
             $request->validate($dinamycRules, $marca->feedback());
         } else {
             $request->validate($marca->rules(), $marca->feedback());
+        }
+        // exclusão da imagem antiga se um novo existir
+        if($request->file('imagem')){
+            Storage::disk('public')->delete($marca->imagem);
         }
         // carregamento dos valores na variavel $marca
         $imagem = $request->file('imagem');
@@ -117,6 +129,7 @@ class MarcaController extends Controller
             return response()
             ->json(['error'=>'Recurso já não existente!'], 404);
         }
+        Storage::disk('public')->delete($marca->imagem);
         $marca->delete($id);
         return response()->json(['msg'=>'A marca foi removida com sucesso!'], 200);;
     }
