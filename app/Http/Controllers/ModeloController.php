@@ -93,7 +93,7 @@ class ModeloController extends Controller
         // exclusão da imagem antiga se um novo existir
         if($request->file('imagem')){
             Storage::disk('public')->delete($modelo->imagem);
-        
+        }
         // carregamento dos valores na variavel $modelo
         $imagem = $request->file('imagem');
         $imagem_urn = $imagem->store('imagens/modelos', 'public');
