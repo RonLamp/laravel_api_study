@@ -69,19 +69,19 @@ class ModeloController extends Controller
      */
     public function update(Request $request, $id)
     {
+            
         // Localizando o resource (registro)
         $modelo = $this->modelo->find($id);
+        //dd($modelo);
         if($modelo===null){
             return response()
             ->json(['error'=>'Atualização indisponível, recurso pesquisado inexistente!'], 404);
         }
-
         if($request->_method === 'PATCH'){
         //if($request.method() === 'PATCH'){
+            // verifica as rules cfe o model
             $dinamycRules = array();
-            // percorrendo todas as regras definidas no Model
             foreach($modelo->rules() as $input => $regra){
-                // coletar somente as regras aplicaveis
                 if(array_key_exists($input, $request->all())){
                     $dinamycRules[$input] = $regra;
                 }
@@ -93,15 +93,19 @@ class ModeloController extends Controller
         // exclusão da imagem antiga se um novo existir
         if($request->file('imagem')){
             Storage::disk('public')->delete($modelo->imagem);
+            // carregamento dos valores na variavel $modelo
+            $imagem = $request->file('imagem');
+            //dd($request->imagem);
+            $imagem_urn = $imagem->store('imagens/modelos', 'public');
+        } else { $imagem_urn = $modelo->imagem;
         }
-        // carregamento dos valores na variavel $modelo
-        $imagem = $request->file('imagem');
-        $imagem_urn = $imagem->store('imagens/modelos', 'public');
+        //dd($request->lugares);
         // Execução da ação propriamente dita
+        
         $modelo->update([
             'nome' => $request->nome,
             'imagem' => $imagem_urn,
-            'marca_id'=> $request->marca_id, 
+            'marca_id'=> $id, // $request->marca_id, 
             'numero_portas'=> $request->numero_portas, 
             'lugares'=> $request->lugares,
             'air_bag'=> $request->air_bag,
