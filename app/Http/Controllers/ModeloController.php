@@ -72,47 +72,51 @@ class ModeloController extends Controller
             
         // Localizando o resource (registro)
         $modelo = $this->modelo->find($id);
-        //dd($modelo);
         if($modelo===null){
             return response()
             ->json(['error'=>'Atualização indisponível, recurso pesquisado inexistente!'], 404);
         }
-        if($request->_method === 'PATCH'){
-        //if($request.method() === 'PATCH'){
-            // verifica as rules cfe o model
-            $dinamycRules = array();
-            foreach($modelo->rules() as $input => $regra){
-                if(array_key_exists($input, $request->all())){
-                    $dinamycRules[$input] = $regra;
-                }
+        // verifica as rules cfe o model atraves de Dynamic Rules
+        $dinamycRules = array();
+        foreach($modelo->rules() as $input => $regra){
+            if(array_key_exists($input, $request->all())){
+                $dinamycRules[$input] = $regra;
             }
-            $request->validate($dinamycRules, $modelo->feedback());
-        } else {
-            $request->validate($modelo->rules(), $modelo->feedback());
         }
+        $request->validate($dinamycRules, $modelo->feedback());
+
         // exclusão da imagem antiga se um novo existir
         if($request->file('imagem')){
             Storage::disk('public')->delete($modelo->imagem);
             // carregamento dos valores na variavel $modelo
-            $imagem = $request->file('imagem');
-            //dd($request->imagem);
-            $imagem_urn = $imagem->store('imagens/modelos', 'public');
-        } else { $imagem_urn = $modelo->imagem;
-        }
+            //$imagem = $request->file('imagem');
+            $request->imagem = $request
+                        ->file('imagem')
+                        ->store('imagens/modelos', 'public');
+        } 
+         // else { $imagem_urn = $modelo->imagem;
+        // }
         //dd($request->lugares);
         // Execução da ação propriamente dita
-        
-        $modelo->update([
-            'nome' => $request->nome,
-            'imagem' => $imagem_urn,
-            'marca_id'=> $id, // $request->marca_id, 
-            'numero_portas'=> $request->numero_portas, 
-            'lugares'=> $request->lugares,
-            'air_bag'=> $request->air_bag,
-            'abs'=> $request->abs
-        ]);
+        //$modelo->update($new)
+        // $modelo->update([
+        //     'nome' => $request->nome,
+        //     'imagem' => $imagem_urn,
+        //     'marca_id'=> $id, // $request->marca_id, 
+        //     'numero_portas'=> $request->numero_portas, 
+        //     'lugares'=> $request->lugares,
+        //     'air_bag'=> $request->air_bag,
+        //     'abs'=> $request->abs
+        // ]);
+        //$new = $request->all();
+        //$old = $modelo->getAttributes();
+        //dd(array_replace($old,$new));
+        $new = array_replace($modelo->getAttributes(),$request->all());
+        unset($new['_method']);
+        $modelo->update($new);
         //$modelo->update($request->all());
-        return response()->json($modelo, 200);
+        //return response()->json($modelo, 200);
+        return response()->json($request->all(), 200);
     }
 
     /**
