@@ -15,7 +15,12 @@ class ModeloController extends Controller
      */
     public function index()
     {
-        return response()->json($this->modelo->all(), 200);
+        //return response()->json($this->modelo->all(), 200);
+        return response()->json($this->modelo->with('marca')->get(), 200);
+        // quando usa-se all() -> cria-se um objeto de consulta Query e 
+        //           depois um método get() para termos uma Collection.
+        // quando se usa o with() estamos modificando uma Query anterior
+        //       para depois, com o méthodo get() termos uma Collection.
     }
 
    /**
@@ -52,7 +57,8 @@ class ModeloController extends Controller
      */
     public function show($id)
     {
-        $modelo = $this->modelo->find($id);
+        $modelo = $this->modelo->wiyh('marca')->find($id);
+        //$modelo = $this->modelo->find($id);
         if($modelo===null){
             return response()
             ->json(['error'=>'Recurso pesquisado inexistente!'], 404);
@@ -87,13 +93,26 @@ class ModeloController extends Controller
         if($request->file('imagem')){
             Storage::disk('public')->delete($modelo->imagem);
             $imagem = $request->file('imagem');
-            $modelo->imagem = $imagem->store('imagens/modelos', 'public');
+            $imagemUrn = $imagem->store('imagens/modelos', 'public');
+            $modelo->imagem = $imagemUrn;
         }
         $newRequest = $request->all();
         unset($newRequest['imagem']);
         //unset($newRequest['_method']);
         $new = array_replace($modelo->getAttributes(),$newRequest);
         $modelo->update($new);
+        //---------  Outra alternativa  ------------------
+        // preencher o objeto $marca com os dados do $request
+        // $modelo->fill($request->all());
+        // como o méthodo fill() só preenche com os campos existentes, o
+        // campo '_method' não precisará ser unseted (), nem o campo 'imagem'
+        // que será alterado posteriormente
+        // $modelo->imagem = imagemUrn;
+        // e por fim utilizar o methodo save() do proprio objeto, desde que 
+        // o id do objeto esteja no próprio objeto.
+        // caso contrario, sem id, o comando save() criará um novo registro.
+        // $modelo->save();
+        // return response()->json($modelo, 200);
         return response()->json($new, 200);
     }
 

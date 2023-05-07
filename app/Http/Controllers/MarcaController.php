@@ -18,6 +18,7 @@ class MarcaController extends Controller
     public function index()
     {
         return response()->json($this->marca->all(), 200);
+        //return response()->json($this->marca->with('modelos')->get(), 200);
     }
 
     /**
@@ -54,6 +55,7 @@ class MarcaController extends Controller
      */
     public function show($id)
     {
+        //$marca = $this->marca->with('modelos')->find($id);
         $marca = $this->marca->find($id);
         if($marca===null){
             return response()
@@ -108,11 +110,17 @@ class MarcaController extends Controller
         $imagem = $request->file('imagem');
         $imagem_urn = $imagem->store('imagens', 'public');
         // Execução da ação propriamente dita
-        $marca->update([
-            'nome' => $request->nome,
-            'imagem' => $imagem_urn
-        ]);
-        //$marca->update($request->all());
+        $marca->fill($request->all());
+        $marca->imagem = $imagem_urn;
+        $marca->save();
+        // e por fim utilizar o methodo save() do proprio objeto, desde que 
+        // o id do objeto esteja no próprio objeto.
+        // caso contrario, sem id, o comando save() criará um novo registro.
+        // $modelo->save();
+        // $marca->update([
+        //     'nome' => $request->nome,
+        //     'imagem' => $imagem_urn
+        // ]);
         return response()->json($marca, 200);
     }
 

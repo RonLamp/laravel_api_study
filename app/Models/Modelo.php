@@ -39,4 +39,9 @@ class Modelo extends Model
                 'imagem.mime' => 'O arquivo deve ser do tipo: png, jpg ou jpeg.'
             ];
     }
+
+    public function marca(){
+        // Um modelo pertence a uma marca.
+        return $this->belogsTo('App\Models\Marca');
+    }
 }
