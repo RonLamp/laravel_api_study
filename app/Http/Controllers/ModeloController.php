@@ -68,8 +68,7 @@ class ModeloController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id)
-    {
-            
+    { 
         // Localizando o resource (registro)
         $modelo = $this->modelo->find($id);
         if($modelo===null){
@@ -84,39 +83,18 @@ class ModeloController extends Controller
             }
         }
         $request->validate($dinamycRules, $modelo->feedback());
-
         // exclusão da imagem antiga se um novo existir
         if($request->file('imagem')){
             Storage::disk('public')->delete($modelo->imagem);
-            // carregamento dos valores na variavel $modelo
-            //$imagem = $request->file('imagem');
-            $request->imagem = $request
-                        ->file('imagem')
-                        ->store('imagens/modelos', 'public');
-        } 
-         // else { $imagem_urn = $modelo->imagem;
-        // }
-        //dd($request->lugares);
-        // Execução da ação propriamente dita
-        //$modelo->update($new)
-        // $modelo->update([
-        //     'nome' => $request->nome,
-        //     'imagem' => $imagem_urn,
-        //     'marca_id'=> $id, // $request->marca_id, 
-        //     'numero_portas'=> $request->numero_portas, 
-        //     'lugares'=> $request->lugares,
-        //     'air_bag'=> $request->air_bag,
-        //     'abs'=> $request->abs
-        // ]);
-        //$new = $request->all();
-        //$old = $modelo->getAttributes();
-        //dd(array_replace($old,$new));
-        $new = array_replace($modelo->getAttributes(),$request->all());
-        unset($new['_method']);
+            $imagem = $request->file('imagem');
+            $modelo->imagem = $imagem->store('imagens/modelos', 'public');
+        }
+        $newRequest = $request->all();
+        unset($newRequest['imagem']);
+        //unset($newRequest['_method']);
+        $new = array_replace($modelo->getAttributes(),$newRequest);
         $modelo->update($new);
-        //$modelo->update($request->all());
-        //return response()->json($modelo, 200);
-        return response()->json($request->all(), 200);
+        return response()->json($new, 200);
     }
 
     /**
