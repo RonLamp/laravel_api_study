@@ -9,18 +9,37 @@ class ModeloController extends Controller
     public function __construct(Modelo $modelo){
         $this->modelo = $modelo;
     }
+
     /**
      * Display a listing of the resource.
      *  @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        //return response()->json($this->modelo->all(), 200);
-        return response()->json($this->modelo->with('marca')->get(), 200);
-        // quando usa-se all() -> cria-se um objeto de consulta Query e 
-        //           depois um método get() para termos uma Collection.
-        // quando se usa o with() estamos modificando uma Query anterior
-        //       para depois, com o méthodo get() termos uma Collection.
+        $modelos = array();
+        if($request->has('atributos_marca')){
+            $atributos_marca = $request->atributos_marca;
+            $modelo = $this->modelo->with('marca:id,'.$atributos_marca);
+        } else{
+            $modelo = $this->modelo->with('marca');
+        }
+
+        if($request->has('atributos')){
+            $atributos = $request->atributos;
+            //$modelo = $this->modelo->select('id','nome','imagem')->get();
+            //----------------------------------------
+            // GET {{URL}}/api/modelo/?atributos=id,nome,imagem
+            // $modelo = $this->modelo->selectRaw($atributos)->get();
+            //----------------------------------------
+            // GET {{URL}}/api/modelo/?atributos=id,nome,imagem,marca_id
+            // $modelo = $this->modelo->selectRaw($atributos)->with('marca')->get();
+            //----------------------------------------
+            // GET {{URL}}/api/modelo/?atributos=id,nome,marca_id&atributos_marca=id,nome,imagem
+            $modelo = $modelo->selectRaw($atributos)->get();
+        } else {
+            $modelo = $modelo->get();
+        }
+        return response()->json($modelo, 200);
     }
 
    /**
