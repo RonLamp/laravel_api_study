@@ -23,6 +23,24 @@ class ModeloController extends Controller
         } else{
             $modelo = $this->modelo->with('marca');
         }
+        
+        if($request->has('filtro')){
+            // aqui temos um filtro simples
+            // $cond = explode(':',$request->filtro);
+            // $modelo = $modelo->where($cond[0],$cond[1],$cond[2]);
+            // exemplos de filtros:
+            // 1) nome:like:Ford%   2) numero_portas:>=:4 
+            // 3) abs:=:true      4) nome:=:Ford KA 1.0
+            // para termos multiplos filtros, cada filtro deve ser separados
+            // pelo caracter ;
+            // exemplo de multifiltros:
+            // nome:like:Ford%;abs:=:1
+            $filtros = explode(';',$request->filtro);
+            foreach($filtros as $key => $condicao){
+                $c = explode(':',$condicao);
+                $modelo = $modelo->where($c[0],$c[1],$c[2]);
+            }
+        }
 
         if($request->has('atributos')){
             $atributos = $request->atributos;
