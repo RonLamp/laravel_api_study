@@ -22,7 +22,7 @@ class MarcaController extends Controller
             $atributos_modelos = $request->atributos_modelos;
             $marcas = $this->marca->with('modelos:id,'.$atributos_modelos);
         } else{
-            $marcas = $this->marca->with('modelos');
+            $marcas = $this->marca; //->with('modelos');
         }
 
         if($request->has('filtro')){
